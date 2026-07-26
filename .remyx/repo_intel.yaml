@@ -10,7 +10,14 @@ observed_landing_zones:
     call_site_specifics: ''
     branch: quantibias-benchmarking-quantization-induced-bias-in-llms
     timestamp: '2026-07-25T12:46:56Z'
-  last_observed: '2026-07-25T12:46:56Z'
+  - arxiv: 2607.09520v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: 'evals/generation.py: main() -> time_bench() -- the existing
+      benchmark CLI invoked via `python evals/generation.py` (now with the added --power_w
+      flag and model/power_w kwargs), which calls into the ne'
+    branch: seeing-is-free-speaking-is-not-uncovering-the-true-energy-bo
+    timestamp: '2026-07-26T05:48:34Z'
+  last_observed: '2026-07-26T05:48:34Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-25T12:46:56Z'
+last_updated: '2026-07-26T05:48:34Z'
