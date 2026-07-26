@@ -17,7 +17,14 @@ observed_landing_zones:
       flag and model/power_w kwargs), which calls into the ne'
     branch: seeing-is-free-speaking-is-not-uncovering-the-true-energy-bo
     timestamp: '2026-07-26T05:48:34Z'
-  last_observed: '2026-07-26T05:48:34Z'
+  - arxiv: 2607.11356v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "python -m evals.backend_latency \u2014 a new CLI entry point\
+      \ in cartesia-pytorch/evals/, invoked the same way (python -m evals.<name>)\
+      \ as the pre-existing evals.generation and evals.cartesia_lm_eval script"
+    branch: benchmarking-edge-inference-strategies-for-deep-learning-mod
+    timestamp: '2026-07-26T21:25:45Z'
+  last_observed: '2026-07-26T21:25:45Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-26T05:48:34Z'
+last_updated: '2026-07-26T21:25:45Z'
