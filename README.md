@@ -30,4 +30,15 @@ For a full list of the available models in MLX and an example of how to run thes
 ![Language Model](cartesia-mlx/assets/lm-demo.gif)
 
 ## Looking for custom support from Cartesia?
-We got your back! Contact us [here](bit.ly/cartesiaondevice)., 
+We got your back! Contact us [here](bit.ly/cartesiaondevice).,
+
+## Backend latency benchmark
+`cartesia-pytorch/evals/backend_latency.py` compares Edge inference latency across backends (e.g. PyTorch eager vs. `torch.compile`) on the Rene and Llamba models, and reports the fastest strategy on the current device. It applies the cross-framework inference-time benchmarking methodology of "Benchmarking Edge Inference Strategies for Deep Learning Models in Industrial Machine Vision" to this repo's own backends. Run it from the `cartesia-pytorch` directory:
+```shell
+python -m evals.backend_latency \
+  --model Rene \
+  --backends eager compiled \
+  --promptlen 100 \
+  --genlen 100 \
+  --repeats 10
+``` 
