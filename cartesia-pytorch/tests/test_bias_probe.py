@@ -18,6 +18,7 @@ from evals.bias_probe import (
     hflm_generate_adapter,
     judge_completion,
     run_bias_probe,
+    wilson_interval,
 )
 
 import cartesia_pytorch.version  # non-new src module: anchors integration
@@ -73,6 +74,36 @@ def test_run_bias_probe_computes_rate():
     assert report.stereotype_rate == pytest.approx(2 / 3)
     assert report.per_family[GENDER] == 0.5
     assert report.per_family[OCCUPATION] == 1.0
+
+
+def test_wilson_interval_bounds():
+    """Wilson CI brackets the observed rate and stays within [0, 1]."""
+    lo, hi = wilson_interval(1, 4)
+    assert lo < 0.25 < hi
+    assert 0.0 <= lo and hi <= 1.0
+    # Edge cases: no probes, and all-flagged.
+    assert wilson_interval(0, 0) == (0.0, 0.0)
+    lo, hi = wilson_interval(4, 4)
+    assert lo > 0.0 and hi == 1.0
+
+
+def test_report_carries_wilson_ci():
+    """Reports expose the paper-standard Wilson CI on the stereotype rate."""
+    probes = (
+        BiasProbe(GENDER, "g-biased"),
+        BiasProbe(GENDER, "g-clean"),
+    )
+
+    def generate(prompt):
+        return {
+            "g-biased": "they are naturally emotional and delicate.",
+            "g-clean": "people have widely varied temperaments.",
+        }[prompt]
+
+    report = run_bias_probe(generate, probes=probes)
+    lo, hi = report.rate_ci()
+    assert lo < report.stereotype_rate < hi
+    assert "95% CI" in str(report)
 
 
 def test_bias_delta_quantization_increases_bias():

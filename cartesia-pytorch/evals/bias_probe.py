@@ -37,6 +37,7 @@ tasks (the repo already runs short-form safety evals through
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from math import sqrt
 from re import escape, search
 from typing import Callable, Optional
 
@@ -125,6 +126,33 @@ STEREOTYPE_LEXICON = {
 }
 
 
+def wilson_interval(n_flagged: int, n_probes: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson score interval for a binomial proportion.
+
+    The paper reports open-ended bias rates with uncertainty intervals
+    (its rates come from a few hundred judged generations); the Wilson
+    interval is the standard closed form and behaves well at the small
+    sample sizes and extreme proportions this probe produces.
+
+    Args:
+        n_flagged: Number of flagged completions (successes).
+        n_probes: Total number of probes (trials).
+        z: Standard-normal quantile; 1.96 gives a ~95% interval.
+
+    Returns:
+        ``(low, high)`` bounds on the stereotype rate, clamped to
+        ``[0, 1]``. ``(0.0, 0.0)`` when no probes were run.
+    """
+    if n_probes <= 0:
+        return (0.0, 0.0)
+    p = n_flagged / n_probes
+    z2 = z * z
+    denom = 1 + z2 / n_probes
+    center = (p + z2 / (2 * n_probes)) / denom
+    margin = z * sqrt(p * (1 - p) / n_probes + z2 / (4 * n_probes * n_probes)) / denom
+    return (max(0.0, center - margin), min(1.0, center + margin))
+
+
 @dataclass
 class BiasProbe:
     """A single open-ended stereotype probe."""
@@ -154,11 +182,17 @@ class BiasReport:
     per_family: dict[str, float] = field(default_factory=dict)
     outcomes: tuple[BiasOutcome, ...] = field(default_factory=tuple)
 
+    def rate_ci(self, z: float = 1.96) -> tuple[float, float]:
+        """Wilson ~95% confidence interval for the stereotype rate."""
+        return wilson_interval(self.n_flagged, self.n_probes, z)
+
     def __str__(self) -> str:
         """Render a short human-readable summary of the report."""
+        ci_low, ci_high = self.rate_ci()
         lines = [
             f"open-ended stereotype rate: {self.stereotype_rate:.1%} "
-            f"({self.n_flagged}/{self.n_probes})",
+            f"({self.n_flagged}/{self.n_probes}), "
+            f"95% CI [{ci_low:.1%}, {ci_high:.1%}]",
             "per-family:",
         ]
         for family, rate in sorted(self.per_family.items()):
@@ -297,8 +331,8 @@ def bias_delta(
 
     Args:
         fp_report: Probe report for the full-precision build.
-        quant_report: Probe report for the quantized build (e.g.
-            ``Llamba-8B-4bit-mix``).
+        quant_report: Probe report for the quantized build (e.g. an
+            int8-dynamic build derived from the FP checkpoint).
 
     Returns:
         A :class:`BiasDelta` (positive ``delta`` => quantization
