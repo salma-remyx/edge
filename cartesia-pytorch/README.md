@@ -65,5 +65,13 @@ python -m evals.cartesia_lm_eval --model rene_ssm --model_args pretrained=cartes
 python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B,trust_remote_code=True --trust_remote_code --tasks hellaswag,piqa,arc_easy,arc_challenge,winogrande,mmlu --cache_requests true --batch_size auto:4 --output_path outputs/llamba_evals/
 ```
 
+### Quantization-induced bias eval
+You can use `evals.bias_eval` to measure quantization-induced open-ended bias (the FP-vs-quantized stereotype delta from [QuantiBias: Benchmarking Quantization-Induced Bias in LLMs](https://arxiv.org/abs/2607.21063)) against our Hugging Face checkpoints, e.g. [Llamba-8B](https://huggingface.co/cartesia-ai/Llamba-8B). It also reports each build's *effective* bits-per-weight, the paper's measured replacement for nominal quantization labels. If `--quant_model` is omitted, the quantized build is derived on the fly via int8 dynamic quantization of linear layers.
+```shell
+python -m evals.bias_eval \
+--fp_model cartesia-ai/Llamba-8B \
+--tokenizer meta-llama/Llama-3.1-8B-Instruct
+```
+
 ## About Cartesia
 At [Cartesia](https://cartesia.ai/), we're building real-time multimodal intelligence for every device.
