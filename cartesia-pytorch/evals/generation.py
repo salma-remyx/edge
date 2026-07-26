@@ -36,24 +36,70 @@ def parse_args():
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--min_p", type=float, default=0.0)
     parser.add_argument("--repetition_penalty", type=float, default=1.0)
+    parser.add_argument(
+        "--power_w",
+        type=float,
+        default=None,
+        help=(
+            "Average inference power in watts. When set, time_bench reports a "
+            "constant-power per-phase energy estimate (energy = power * time)."
+        ),
+    )
     return parser.parse_args()
 
 
 @torch.inference_mode()
-def time_bench(args, input_ids, generate_fn):
-    """Benchmark the generation time."""
+def time_bench(args, input_ids, generate_fn, model=None, power_w=None):
+    """Benchmark generation time, split into prefill and decode phases.
+
+    Reports prompt processing (prefill) and decoding (decode) separately and, when
+    ``power_w`` is given, estimates per-phase energy under a constant-power model
+    (energy = power * time). Each decode token costs far more than each prefill
+    token, so output length -- not input length -- dominates both latency and
+    energy. Adapted from "Seeing is Free, Speaking is Not" (arXiv:2607.09520).
+    """
+    from .energy_profile import report_phases
+
     torch.cuda.synchronize()
     start = time.time()
     for _ in range(args.repeats):
         out = generate_fn(input_ids=input_ids, max_length=input_ids.shape[1] + args.genlen)
     torch.cuda.synchronize()
+    total_ms = (time.time() - start) / args.repeats * 1000
+
+    # Prefill (prompt processing) measured in isolation: a single forward pass
+    # over the prompt. Best-effort: if the raw forward is unsupported, time_bench
+    # falls back to reporting only the combined total.
+    prefill_ms = None
+    if model is not None:
+        try:
+            torch.cuda.synchronize()
+            prefill_start = time.time()
+            for _ in range(args.repeats):
+                model(input_ids)
+            torch.cuda.synchronize()
+            prefill_ms = (time.time() - prefill_start) / args.repeats * 1000
+        except Exception:
+            prefill_ms = None
+
+    prompt_len = len(input_ids[0])
+    gen_len = len(out.sequences[0]) - prompt_len
 
     # Print stats
     print(f"\nTiming results for {args.model} model:")
-    print(
-        f"Prompt length: {len(input_ids[0])}, generation length: {len(out.sequences[0]) - len(input_ids[0])}"
+    print(f"Prompt length: {prompt_len}, generation length: {gen_len}")
+    print(f"prompt processing + decoding time: {total_ms:.0f}ms")
+
+    report = report_phases(
+        total_ms=total_ms,
+        prefill_ms=prefill_ms,
+        prompt_len=prompt_len,
+        gen_len=gen_len,
+        power_w=power_w,
     )
-    print(f"prompt processing + decoding time: {(time.time() - start) / args.repeats * 1000:.0f}ms")
+    if prefill_ms is not None or power_w is not None:
+        print(report.format())
+    return report
 
 
 def choose_model(args):
@@ -125,7 +171,7 @@ def main():
             tokenizer.batch_decode(sequences=out.sequences.tolist(), skip_special_tokens=True)[0],
         )
 
-    time_bench(args, input_ids, generate_fn)
+    time_bench(args, input_ids, generate_fn, model=model, power_w=args.power_w)
 
 
 if __name__ == "__main__":
