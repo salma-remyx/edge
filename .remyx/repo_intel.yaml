@@ -24,7 +24,12 @@ observed_landing_zones:
       \ as the pre-existing evals.generation and evals.cartesia_lm_eval script"
     branch: benchmarking-edge-inference-strategies-for-deep-learning-mod
     timestamp: '2026-07-26T21:25:45Z'
-  last_observed: '2026-07-26T21:25:45Z'
+  - arxiv: 2607.09172v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none)
+    branch: attention-to-detail-evaluating-energy-performance-and-accura
+    timestamp: '2026-07-27T18:16:03Z'
+  last_observed: '2026-07-27T18:16:03Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-26T21:25:45Z'
+last_updated: '2026-07-27T18:16:03Z'
