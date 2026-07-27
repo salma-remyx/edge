@@ -30,4 +30,14 @@ For a full list of the available models in MLX and an example of how to run thes
 ![Language Model](cartesia-mlx/assets/lm-demo.gif)
 
 ## Looking for custom support from Cartesia?
-We got your back! Contact us [here](bit.ly/cartesiaondevice)., 
+We got your back! Contact us [here](bit.ly/cartesiaondevice).
+
+## Configuration trade-off analysis
+[`evals.config_tradeoff`](cartesia-pytorch/evals/config_tradeoff.py) — adapted from a study of inference-configuration energy/performance/accuracy trade-offs — sweeps an SSM model's own inference knobs (CUDA-graph on/off, dtype, prompt length, generation length, and model choice) and reports the energy × performance × accuracy Pareto frontier, surfacing which knob drives each metric. Run it from the `cartesia-pytorch` directory:
+
+```shell
+python -m evals.config_tradeoff --models Llamba-1B,Llamba-8B \
+  --cg on,off --dtype bfloat16,float16 --power_w 350
+```
+
+Pass `--dry_grid` to enumerate the sweep without loading a model. See the module docstring for the full methodology and attribution. 
