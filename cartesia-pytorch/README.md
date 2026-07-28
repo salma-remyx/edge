@@ -67,3 +67,20 @@ python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cart
 
 ## About Cartesia
 At [Cartesia](https://cartesia.ai/), we're building real-time multimodal intelligence for every device.
+
+### Tokenizer efficiency example
+Tokenizer fragmentation measures how many tokens a fixed pre-training tokenizer needs per character across languages. Compact edge models ship small vocabularies, so non-primary languages are split into more tokens per word, raising per-character decode latency, compute, and energy by the same factor. This benchmark quantifies that disparity for our tokenizers and, optionally, combines it with a measured per-token decode latency.
+```shell
+python -m evals.tokenizer_efficiency \
+--model Llamba-3B \
+--baseline English
+```
+To also load the model and report absolute per-character decode cost per language, add `--decode-latency`:
+```shell
+python -m evals.tokenizer_efficiency \
+--model Llamba-3B \
+--baseline English \
+--decode-latency \
+--genlen 64
+```
+The default corpus is a small built-in set of parallel sentences; pass `--corpus path/to/corpus.json` (a JSON object mapping language name to sample text, e.g. FLORES) for real benchmarking.
