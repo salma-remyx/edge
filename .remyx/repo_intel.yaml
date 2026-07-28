@@ -29,7 +29,12 @@ observed_landing_zones:
     call_site_specifics: (none)
     branch: attention-to-detail-evaluating-energy-performance-and-accura
     timestamp: '2026-07-27T18:16:03Z'
-  last_observed: '2026-07-27T18:16:03Z'
+  - arxiv: 2607.15232v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none)
+    branch: in-place-tokenizer-expansion-for-pre-trained-llms
+    timestamp: '2026-07-28T11:45:38Z'
+  last_observed: '2026-07-28T11:45:38Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-27T18:16:03Z'
+last_updated: '2026-07-28T11:45:38Z'
