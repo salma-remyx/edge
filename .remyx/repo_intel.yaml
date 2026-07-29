@@ -35,6 +35,17 @@ observed_landing_zones:
     branch: in-place-tokenizer-expansion-for-pre-trained-llms
     timestamp: '2026-07-28T11:45:38Z'
   last_observed: '2026-07-28T11:45:38Z'
+- path: cartesia-pytorch/cartesia_pytorch/Llamba/mixers/
+  shape_tags:
+  - unclassified
+  confirmed_by:
+  - arxiv: 2405.06147v2
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "(none) \u2014 only the new tests and the new evals/state_free_inference.py\
+      \ CLI invoke it; no pre-existing entry point or module does"
+    branch: state-free-inference-of-state-space-models-the-transfer-func
+    timestamp: '2026-07-29T05:05:11Z'
+  last_observed: '2026-07-29T05:05:11Z'
 rejected_shapes: []
 coordination_signals: []
-last_updated: '2026-07-28T11:45:38Z'
+last_updated: '2026-07-29T05:05:11Z'
