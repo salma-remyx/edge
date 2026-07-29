@@ -8,7 +8,12 @@ try:
 except ImportError:
     causal_conv1d_fn, causal_conv1d_update = None, None
 
-from mamba_ssm.ops.triton.ssd_combined import mamba_chunk_scan_combined
+try:
+    from mamba_ssm.ops.triton.ssd_combined import mamba_chunk_scan_combined
+except ImportError:
+    # The Triton scan kernel is optional: importing the module without it still
+    # works (e.g. on CPU), and only the state-space forward/step paths require it.
+    mamba_chunk_scan_combined = None
 
 try:
     from mamba_ssm.ops.triton.selective_state_update import selective_state_update
@@ -207,6 +212,32 @@ class DiscreteMamba2(nn.Module):
         outputs["hidden_states"] = out[:, :seqlen, :]
 
         return outputs
+
+    @staticmethod
+    def state_free_forward(u, a, b_tilde, h_0, kernel_len=None):
+        """State-free (transfer-function) SSM inference -- the RTF alternative.
+
+        While :meth:`forward` runs the native chunked SSD scan (whose activation
+        memory and compute scale with the state size), this exposes the
+        state-free transfer-function path of Bick et al. (2024), whose cost is
+        ``O(L log L)`` and independent of the state size. It is a thin delegate
+        to :mod:`cartesia_pytorch.Llamba.mixers.state_free`; see that module for
+        the native-scan baseline used to validate equivalence.
+
+        Args:
+            u: Input sequence ``(B, C, L)``.
+            a: RTF denominator coefficients ``(C, n)`` (leading ``1`` implicit).
+            b_tilde: RTF numerator coefficients ``(C, n)`` (leading ``0`` implicit).
+            h_0: Feedthrough term ``(C,)``.
+            kernel_len: Impulse-response length to truncate to (defaults to
+                ``max(L, n + 1)``).
+
+        Returns:
+            Output sequence ``(B, C, L)``.
+        """
+        from . import state_free as _state_free
+
+        return _state_free.state_free_forward(u, a, b_tilde, h_0, kernel_len=kernel_len)
 
     def step(self, u, state, **kwargs):
         """
