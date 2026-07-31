@@ -46,6 +46,12 @@ observed_landing_zones:
     branch: state-free-inference-of-state-space-models-the-transfer-func
     timestamp: '2026-07-29T05:05:11Z'
   last_observed: '2026-07-29T05:05:11Z'
-rejected_shapes: []
+rejected_shapes:
+- shape_tag: null
+  reason_code: null
+  reason_summary: ''
+  observed:
+  - arxiv: 2607.24434v1
+    timestamp: '2026-07-31T01:25:52Z'
 coordination_signals: []
-last_updated: '2026-07-29T05:05:11Z'
+last_updated: '2026-07-31T01:25:52Z'
