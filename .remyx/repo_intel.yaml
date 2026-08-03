@@ -34,7 +34,14 @@ observed_landing_zones:
     call_site_specifics: (none)
     branch: in-place-tokenizer-expansion-for-pre-trained-llms
     timestamp: '2026-07-28T11:45:38Z'
-  last_observed: '2026-07-28T11:45:38Z'
+  - arxiv: 2607.26922v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: "evals/generation.py:main() \u2014 the new `if args.strategy_bench:`\
+      \ block (line ~119) imports and calls run_strategy_bench(model, tokenizer, args)\
+      \ from evals.refine_vs_agents; the existing `python -m evals"
+    branch: two-calls-beat-five-agents-evaluating-multi-agent-pipelines-
+    timestamp: '2026-08-03T18:28:36Z'
+  last_observed: '2026-08-03T18:28:36Z'
 - path: cartesia-pytorch/cartesia_pytorch/Llamba/mixers/
   shape_tags:
   - unclassified
@@ -66,4 +73,4 @@ rejected_shapes:
   - arxiv: 2607.24434v1
     timestamp: '2026-07-31T01:25:52Z'
 coordination_signals: []
-last_updated: '2026-08-03T02:25:28Z'
+last_updated: '2026-08-03T18:28:36Z'
