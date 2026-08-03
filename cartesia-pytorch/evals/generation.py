@@ -5,10 +5,8 @@ import time
 from functools import partial
 
 import torch
-from transformers import AutoTokenizer
 
-from cartesia_pytorch.Llamba.llamba import LlambaLMHeadModel
-from cartesia_pytorch.Rene.rene import ReneLMHeadModel
+from cartesia_pytorch.utils.compression_screen import format_screen_report, screen_state_dicts
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -36,6 +34,21 @@ def parse_args():
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--min_p", type=float, default=0.0)
     parser.add_argument("--repetition_penalty", type=float, default=1.0)
+    # Data-free compression-fidelity screen (arXiv:2607.28196): flags coherent
+    # low-rank compression of the loaded model vs this baseline before deploy.
+    parser.add_argument(
+        "--compression-baseline",
+        type=str,
+        default=None,
+        help="Baseline model name to screen the loaded model against.",
+    )
+    parser.add_argument(
+        "--compression-threshold",
+        type=float,
+        default=None,
+        help="Flag threshold on coherent-fraction x error-rate (uses screen default).",
+    )
+    parser.add_argument("--compression-top-k", type=int, default=1)
     return parser.parse_args()
 
 
@@ -58,6 +71,13 @@ def time_bench(args, input_ids, generate_fn):
 
 def choose_model(args):
     """Load the model and tokenizer based on the model name."""
+    # Imported lazily so the benchmark CLI stays importable without the
+    # accelerator-only model backends (e.g. on CPU / in tests).
+    from transformers import AutoTokenizer
+
+    from cartesia_pytorch.Llamba.llamba import LlambaLMHeadModel
+    from cartesia_pytorch.Rene.rene import ReneLMHeadModel
+
     name = args.model
     # Load model
     if name == "Llamba-1B":
@@ -78,6 +98,18 @@ def choose_model(args):
     return model, tokenizer
 
 
+def run_compression_screen(model, baseline_model, threshold=None, top_k=1):
+    """Screen ``model`` against ``baseline_model`` with the data-free weight screen.
+
+    Flags coherent low-rank compression (e.g. SVD truncation) that is too gentle
+    to move the generation benchmark. Needs only the two weight sets.
+    """
+    kwargs = {} if threshold is None else {"threshold": threshold}
+    return screen_state_dicts(
+        original=baseline_model.state_dict(), compressed=model.state_dict(), top_k=top_k, **kwargs
+    )
+
+
 @torch.inference_mode()
 def main():
     """Main function for generation benchmarking."""
@@ -93,6 +125,21 @@ def main():
     model.to(dtype=getattr(torch, args.dtype))
     model.eval()
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
+
+    # Optional data-free screen of the loaded model vs an uncompressed baseline
+    # (arXiv:2607.28196): catches coherent low-rank compression the benchmark misses.
+    if args.compression_baseline is not None:
+        saved_model = args.model
+        args.model = args.compression_baseline
+        baseline, _ = choose_model(args)
+        args.model = saved_model
+        report = run_compression_screen(
+            model,
+            baseline,
+            threshold=args.compression_threshold,
+            top_k=args.compression_top_k,
+        )
+        print(format_screen_report(report))
 
     # Tokenize prompt
     if args.prompt is None:
