@@ -46,6 +46,18 @@ observed_landing_zones:
     branch: state-free-inference-of-state-space-models-the-transfer-func
     timestamp: '2026-07-29T05:05:11Z'
   last_observed: '2026-07-29T05:05:11Z'
+- path: cartesia-pytorch/cartesia_pytorch/utils/
+  shape_tags:
+  - unclassified
+  confirmed_by:
+  - arxiv: 2607.28196v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: Pre-existing entry point evals/generation.py main() (new
+      --compression-baseline / --compression-threshold / --compression-top-k flags
+      call run_compression_screen -> screen_state_dicts / format_screen_
+    branch: fidelity-is-not-safety-gently-compressed-llms-pass-every-dat
+    timestamp: '2026-08-03T02:25:28Z'
+  last_observed: '2026-08-03T02:25:28Z'
 rejected_shapes:
 - shape_tag: null
   reason_code: null
@@ -54,4 +66,4 @@ rejected_shapes:
   - arxiv: 2607.24434v1
     timestamp: '2026-07-31T01:25:52Z'
 coordination_signals: []
-last_updated: '2026-07-31T01:25:52Z'
+last_updated: '2026-08-03T02:25:28Z'
