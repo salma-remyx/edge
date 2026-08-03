@@ -65,5 +65,17 @@ python -m evals.cartesia_lm_eval --model rene_ssm --model_args pretrained=cartes
 python -m evals.cartesia_lm_eval --model llamba_ssm --model_args pretrained=cartesia-ai/Llamba-8B,trust_remote_code=True --trust_remote_code --tasks hellaswag,piqa,arc_easy,arc_challenge,winogrande,mmlu --cache_requests true --batch_size auto:4 --output_path outputs/llamba_evals/
 ```
 
+### Self-refinement vs. multi-agent example
+Compare a single-call baseline, a two-call self-refinement loop, and a three-role multi-agent pipeline on a small built-in math problem set, reporting accuracy and token usage per strategy. Useful for deciding whether an agentic workflow is worth its cost for a local SSM. Adapted from "Two Calls Beat Five Agents: Evaluating Multi-Agent Pipelines Against Self-Refinement for Local Language Models".
+```shell
+python -m evals.generation \
+--model Rene \
+--strategy-bench \
+--strategies direct,self_refine,multi_agent \
+--agent-format plaintext \
+--bench-problems 0
+```
+The `--agent-format` flag selects the inter-agent communication format for the multi-agent arm (`plaintext` or `json`); `--bench-problems 0` uses the full built-in problem set.
+
 ## About Cartesia
 At [Cartesia](https://cartesia.ai/), we're building real-time multimodal intelligence for every device.

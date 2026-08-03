@@ -36,6 +36,28 @@ def parse_args():
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--min_p", type=float, default=0.0)
     parser.add_argument("--repetition_penalty", type=float, default=1.0)
+    # Strategy benchmark dispatch (self-refinement vs. multi-agent for local SSMs).
+    parser.add_argument(
+        "--strategy-bench",
+        action="store_true",
+        help="Run the self-refinement vs. multi-agent benchmark instead of timing.",
+    )
+    parser.add_argument(
+        "--bench-problems", type=int, default=0, help="Number of built-in problems (0 = all)."
+    )
+    parser.add_argument(
+        "--strategies",
+        type=str,
+        default="all",
+        help="Comma-separated subset: direct,self_refine,multi_agent (or 'all').",
+    )
+    parser.add_argument(
+        "--agent-format",
+        type=str,
+        default="plaintext",
+        choices=["plaintext", "json"],
+        help="Inter-agent communication format for the multi-agent arm.",
+    )
     return parser.parse_args()
 
 
@@ -93,6 +115,12 @@ def main():
     model.to(dtype=getattr(torch, args.dtype))
     model.eval()
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters())}")
+
+    if args.strategy_bench:
+        from evals.refine_vs_agents import run_strategy_bench
+
+        run_strategy_bench(model, tokenizer, args)
+        return
 
     # Tokenize prompt
     if args.prompt is None:
