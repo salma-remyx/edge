@@ -52,7 +52,14 @@ observed_landing_zones:
       \ CLI invoke it; no pre-existing entry point or module does"
     branch: state-free-inference-of-state-space-models-the-transfer-func
     timestamp: '2026-07-29T05:05:11Z'
-  last_observed: '2026-07-29T05:05:11Z'
+  - arxiv: 2608.02560v1
+    mode: Mode 2 (adapted port)
+    call_site_specifics: (none - the encode/inject capability is invoked only by the
+      new evals/precog_state_injection.py script and the new tests; the inject_initial_states
+      flag itself sits on every existing DiscreteMamba2.fo
+    branch: structured-memory-for-edge-language-models-persistent-contex
+    timestamp: '2026-08-06T13:23:07Z'
+  last_observed: '2026-08-06T13:23:07Z'
 - path: cartesia-pytorch/cartesia_pytorch/utils/
   shape_tags:
   - unclassified
@@ -75,4 +82,4 @@ rejected_shapes:
   - arxiv: 2607.26865v1
     timestamp: '2026-08-05T05:32:00Z'
 coordination_signals: []
-last_updated: '2026-08-05T05:32:00Z'
+last_updated: '2026-08-06T13:23:07Z'
