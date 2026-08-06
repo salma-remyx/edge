@@ -62,6 +62,13 @@ class DiscreteMamba2(nn.Module):
         self.bias = bias
         self.kwargs = kwargs
 
+        # Opt-in flag for O(1) SSM state injection (PRECOG, arXiv:2608.02560): when
+        # True, forward feeds the cache's seeded `state["ssm"]` as `initial_states`
+        # to the chunked scan so a prefill can *start* from a pre-encoded corpus
+        # state. Default False keeps existing generation byte-identical; see
+        # `corpus_state_cache` for the encode/inject helpers that flip this.
+        self.inject_initial_states = False
+
         # Projections
         self.in_proj = nn.Linear(
             self.d_model,
@@ -180,7 +187,14 @@ class DiscreteMamba2(nn.Module):
         B = rearrange(B, "b l (h n) -> b l h n", h=self.n_qk_heads)
         C = rearrange(C, "b l (h n) -> b l h n", h=self.n_qk_heads)
 
-        # SSM forward
+        # SSM forward.
+        # When `inject_initial_states` is set, the recurrent state seeded into the
+        # cache (e.g. a pre-encoded corpus state) is passed as `initial_states` so
+        # this prefill starts from it -- the O(1) context injection. For a
+        # freshly-allocated (zero) cache, or when the flag is off, this is a no-op.
+        initial_states = (
+            state["ssm"] if (state is not None and self.inject_initial_states) else None
+        )
         result = mamba_chunk_scan_combined(
             x=x / F.softplus(A_log).to(x.dtype).unsqueeze(-1),
             dt=A_log,
@@ -189,7 +203,7 @@ class DiscreteMamba2(nn.Module):
             B=B,
             C=C,
             chunk_size=chunk_size,
-            # initial_states=(state["ssm"] if state is not None else None), # currently not supported by mamba_ssm.utils.generation
+            initial_states=initial_states,
             return_final_states=(state is not None),
         )
 
