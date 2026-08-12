@@ -71,7 +71,12 @@ observed_landing_zones:
       call run_compression_screen -> screen_state_dicts / format_screen_
     branch: fidelity-is-not-safety-gently-compressed-llms-pass-every-dat
     timestamp: '2026-08-03T02:25:28Z'
-  last_observed: '2026-08-03T02:25:28Z'
+  - arxiv: 2608.07019v1
+    mode: ''
+    call_site_specifics: ''
+    branch: requant-fixed-grid-discrete-refinement-for-post-training-qua
+    timestamp: '2026-08-12T11:17:57Z'
+  last_observed: '2026-08-12T11:17:57Z'
 rejected_shapes:
 - shape_tag: null
   reason_code: null
@@ -84,4 +89,4 @@ rejected_shapes:
   - arxiv: 2607.29678v1
     timestamp: '2026-08-11T16:36:22Z'
 coordination_signals: []
-last_updated: '2026-08-11T16:36:22Z'
+last_updated: '2026-08-12T11:17:57Z'
